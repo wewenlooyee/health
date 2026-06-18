@@ -5,14 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>智慧健康日誌與風險評估系統</title>
     <style>
-        /* CSS 樣式設計 (包含響應式與風險徽章) */
+        /* CSS 樣式設計 */
         :root {
             --primary-color: #4A90E2;
             --bg-color: #F4F7F6;
             --text-color: #333;
             --card-bg: #FFFFFF;
             
-            /* Risk Badge Colors */
             --badge-low: #E8F5E9;
             --badge-low-text: #2E7D32;
             --badge-medium: #FFF8E1;
@@ -53,7 +52,6 @@
             margin-bottom: 25px;
         }
 
-        /* 快速測試區塊樣式 */
         .demo-section {
             background-color: #f8f9fa;
             border: 1px dashed #b0bec5;
@@ -98,18 +96,23 @@
             font-weight: 600;
         }
 
-        .form-group input {
+        /* 讓 select 下拉選單和 input 擁有相同的樣式 */
+        .form-group input, .form-group select {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 6px;
             box-sizing: border-box;
             transition: border-color 0.3s;
+            font-family: inherit;
+            font-size: 16px;
+            background-color: #fff;
         }
         
-        .form-group input:focus {
+        .form-group input:focus, .form-group select:focus {
             border-color: var(--primary-color);
             outline: none;
+            box-shadow: 0 0 5px rgba(74, 144, 226, 0.3);
         }
 
         .btn-submit {
@@ -125,9 +128,7 @@
             width: 100%;
         }
 
-        .btn-submit:hover {
-            background-color: #357ABD;
-        }
+        .btn-submit:hover { background-color: #357ABD; }
 
         .btn-cancel {
             background-color: #9e9e9e;
@@ -141,72 +142,27 @@
             width: 100%;
         }
 
-        .btn-cancel:hover {
-            background-color: #757575;
-        }
+        .btn-cancel:hover { background-color: #757575; }
 
-        /* 響應式 Table */
-        .table-responsive {
-            overflow-x: auto;
-        }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 600px; }
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; }
+        th { background-color: #fafafa; font-weight: 600; color: #555; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            min-width: 600px;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: center;
-            border-bottom: 1px solid #eee;
-        }
-
-        th {
-            background-color: #fafafa;
-            font-weight: 600;
-            color: #555;
-        }
-
-        /* 風險徽章 (Badge) */
-        .badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 0.9em;
-            display: inline-block;
-        }
-
+        .badge { padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 0.9em; display: inline-block; }
         .badge-low { background-color: var(--badge-low); color: var(--badge-low-text); }
         .badge-medium { background-color: var(--badge-medium); color: var(--badge-medium-text); }
         .badge-high { background-color: var(--badge-high); color: var(--badge-high-text); }
 
-        /* 操作按鈕 */
-        .action-btn {
-            padding: 6px 12px;
-            font-size: 13px;
-            margin: 0 4px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            color: white;
-            font-weight: 500;
-        }
-
+        .action-btn { padding: 6px 12px; font-size: 13px; margin: 0 4px; border-radius: 4px; border: none; cursor: pointer; color: white; font-weight: 500; }
         .edit-btn { background-color: #ffb300; }
         .edit-btn:hover { background-color: #ffa000; }
         .delete-btn { background-color: #e53935; }
         .delete-btn:hover { background-color: #d32f2f; }
 
         @media (min-width: 600px) {
-            .btn-submit, .btn-cancel {
-                width: auto;
-            }
-            .btn-cancel {
-                margin-top: 0;
-                margin-left: 10px;
-            }
+            .btn-submit, .btn-cancel { width: auto; }
+            .btn-cancel { margin-top: 0; margin-left: 10px; }
         }
     </style>
 </head>
@@ -218,18 +174,16 @@
         </header>
 
         <main>
-            <!-- 專題 Demo 專用的快速測試區塊 -->
             <section class="demo-section">
                 <span class="demo-label">🧪 專題展示快速填寫：</span>
-                <button type="button" class="btn-demo btn-demo-low" onclick="fillDemo(8.5, 10000, 9)">
-                    🟢 正常組數據 (睡眠8.5h / 步數10000 / 心情9)
+                <button type="button" class="btn-demo btn-demo-low" onclick="fillDemo('8', 10000, '9')">
+                    🟢 正常組數據 (睡眠8h / 步數10000 / 心情9)
                 </button>
-                <button type="button" class="btn-demo btn-demo-high" onclick="fillDemo(3.0, 1200, 2)">
-                    🔴 極端高風險數據 (睡眠3.0h / 步數1200 / 心情2)
+                <button type="button" class="btn-demo btn-demo-high" onclick="fillDemo('3', 1200, '2')">
+                    🔴 極端高風險數據 (睡眠3h / 步數1200 / 心情2)
                 </button>
             </section>
 
-            <!-- 輸入表單區塊 -->
             <section class="card form-section">
                 <h2>新增 / 編輯每日健康紀錄</h2>
                 <form id="healthForm">
@@ -242,7 +196,21 @@
 
                     <div class="form-group">
                         <label for="sleepHours">睡眠時數 (小時)：</label>
-                        <input type="number" id="sleepHours" step="0.1" min="0" max="24" required placeholder="例如：7.5">
+                        <select id="sleepHours" required>
+                            <option value="" disabled selected>請選擇睡眠時數</option>
+                            <option value="1">1 小時</option>
+                            <option value="2">2 小時</option>
+                            <option value="3">3 小時</option>
+                            <option value="4">4 小時</option>
+                            <option value="5">5 小時</option>
+                            <option value="6">6 小時</option>
+                            <option value="7">7 小時</option>
+                            <option value="8">8 小時</option>
+                            <option value="9">9 小時</option>
+                            <option value="10">10 小時</option>
+                            <option value="11">11 小時</option>
+                            <option value="12">12 小時 (含以上)</option>
+                        </select>
                     </div>
 
                     <div class="form-group">
@@ -252,7 +220,19 @@
 
                     <div class="form-group">
                         <label for="moodScore">心情分數 (1 差 ~ 10 極佳)：</label>
-                        <input type="number" id="moodScore" min="1" max="10" required placeholder="例如：8">
+                        <select id="moodScore" required>
+                            <option value="" disabled selected>請選擇心情分數</option>
+                            <option value="1">1 分 - 極差</option>
+                            <option value="2">2 分</option>
+                            <option value="3">3 分</option>
+                            <option value="4">4 分</option>
+                            <option value="5">5 分 - 普通</option>
+                            <option value="6">6 分</option>
+                            <option value="7">7 分</option>
+                            <option value="8">8 分</option>
+                            <option value="9">9 分</option>
+                            <option value="10">10 分 - 極佳</option>
+                        </select>
                     </div>
 
                     <button type="submit" id="submitBtn" class="btn-submit">儲存並評估風險</button>
@@ -260,7 +240,6 @@
                 </form>
             </section>
 
-            <!-- 歷史紀錄與風險呈現區塊 -->
             <section class="card table-section">
                 <h2>歷史紀錄分析</h2>
                 <div class="table-responsive">
@@ -276,8 +255,7 @@
                             </tr>
                         </thead>
                         <tbody id="logsTableBody">
-                            <!-- JS 動態插入數據 -->
-                        </tbody>
+                            </tbody>
                     </table>
                 </div>
             </section>
@@ -285,10 +263,9 @@
     </div>
 
     <script>
-        // 前端 JavaScript 邏輯
         document.addEventListener('DOMContentLoaded', () => {
-            fetchLogs(); // 初始化取得資料
-            document.getElementById('logDate').valueAsDate = new Date(); // 預設填入今日日期
+            fetchLogs();
+            document.getElementById('logDate').valueAsDate = new Date();
         });
 
         const form = document.getElementById('healthForm');
@@ -297,22 +274,42 @@
         const cancelBtn = document.getElementById('cancelBtn');
         const editIdInput = document.getElementById('editId');
 
-        // 專題 Demo 用的快速填入功能
+        // =====================================
+        // 新增：Enter 鍵切換欄位邏輯
+        // =====================================
+        const inputFlow = ['logDate', 'sleepHours', 'steps', 'moodScore'];
+        
+        inputFlow.forEach((id, index) => {
+            const el = document.getElementById(id);
+            el.addEventListener('keydown', function(e) {
+                // 當按下 Enter 鍵時
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // 阻止原本按 Enter 會直接送出表單的行為
+                    
+                    if (index < inputFlow.length - 1) {
+                        // 如果不是最後一個欄位，把游標焦點移到下一個欄位
+                        document.getElementById(inputFlow[index + 1]).focus();
+                    } else {
+                        // 如果已經是最後一個欄位 (心情分數)，就直接觸發送出按鈕
+                        submitBtn.click();
+                    }
+                }
+            });
+        });
+
         window.fillDemo = function(sleep, steps, mood) {
             document.getElementById('sleepHours').value = sleep;
             document.getElementById('steps').value = steps;
             document.getElementById('moodScore').value = mood;
             
-            // 填入後給予簡單的視覺提示
             const inputs = ['sleepHours', 'steps', 'moodScore'];
             inputs.forEach(id => {
                 const el = document.getElementById(id);
-                el.style.backgroundColor = '#FFF9C4'; // 短暫黃色高亮
+                el.style.backgroundColor = '#FFF9C4';
                 setTimeout(() => el.style.backgroundColor = '', 500);
             });
         };
 
-        // 處理表單提交 (POST 新增 或 PUT 修改)
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -344,14 +341,16 @@
                 if (!response.ok) throw new Error('伺服器處理失敗');
                 
                 resetForm();
-                fetchLogs(); // 重新刷洗列表
+                fetchLogs();
+
+                // 送出後將焦點重新移回第一個欄位 (日期)，方便連續輸入
+                document.getElementById('logDate').focus();
 
             } catch (error) {
                 alert('發生錯誤: ' + error.message);
             }
         });
 
-        // 取得並渲染列表
         async function fetchLogs() {
             try {
                 const response = await fetch('/health-logs');
@@ -361,7 +360,6 @@
                 data.forEach(log => {
                     const tr = document.createElement('tr');
                     
-                    // 判斷徽章 CSS 類別
                     let badgeClass = '';
                     if (log.risk_level === '低風險') badgeClass = 'badge-low';
                     else if (log.risk_level === '中風險') badgeClass = 'badge-medium';
@@ -385,7 +383,6 @@
             }
         }
 
-        // 刪除日誌
         async function deleteLog(id) {
             if (!confirm('確定要刪除這筆健康日誌嗎？')) return;
             
@@ -404,7 +401,6 @@
             }
         }
 
-        // 進入編輯模式
         window.editLog = function(id, date, sleep, steps, mood) {
             editIdInput.value = id;
             document.getElementById('logDate').value = date;
@@ -414,10 +410,9 @@
             
             submitBtn.textContent = '更新並重新評估';
             cancelBtn.style.display = 'inline-block';
-            window.scrollTo({ top: 0, behavior: 'smooth' }); // 編輯時自動捲動至表單
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
-        // 取消編輯模式
         cancelBtn.addEventListener('click', resetForm);
 
         function resetForm() {
