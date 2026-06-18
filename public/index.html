@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>智慧健康日誌與風險評估系統</title>
-    <!-- 引入 Chart.js 函式庫 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* CSS 變數定義 */
@@ -86,6 +85,27 @@
             transition: background-color 0.4s ease;
         }
 
+        /* Dashboard 摘要卡片樣式 */
+        .dashboard-summary {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .summary-card {
+            flex: 1;
+            min-width: 200px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            text-align: center;
+            border-top: 4px solid var(--primary-color);
+            transition: background-color 0.4s ease;
+        }
+        .summary-card h3 { margin: 0 0 10px 0; font-size: 15px; color: var(--text-color); opacity: 0.8; }
+        .summary-card p { margin: 0; font-size: 26px; font-weight: bold; color: var(--primary-color); }
+
         /* 貼心話回饋卡片樣式 */
         .caring-message {
             padding: 15px 20px;
@@ -107,6 +127,7 @@
         .msg-medium { background-color: var(--badge-medium); color: var(--badge-medium-text); border-color: var(--badge-medium-text); }
         .msg-high { background-color: var(--badge-high); color: var(--badge-high-text); border-color: var(--badge-high-text); }
 
+        /* 快速填寫按鈕區塊 */
         .demo-section {
             background-color: rgba(255, 255, 255, 0.5);
             border: 1px dashed var(--border-color);
@@ -120,9 +141,25 @@
         }
         [data-theme="dark"] .demo-section { background-color: rgba(0, 0, 0, 0.2); }
 
-        .btn-demo { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; }
+        .demo-label { font-weight: bold; color: #546e7a; margin-right: 5px; width: 100%; margin-bottom: 5px; }
+        .btn-demo { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13.5px; transition: transform 0.1s; }
+        .btn-demo:active { transform: scale(0.95); }
+        
+        /* 四層風險展示按鈕樣式 */
         .btn-demo-low { background-color: var(--badge-low); color: var(--badge-low-text); border: 1px solid var(--badge-low-text); }
+        .btn-demo-medium { background-color: var(--badge-medium); color: var(--badge-medium-text); border: 1px solid var(--badge-medium-text); }
         .btn-demo-high { background-color: var(--badge-high); color: var(--badge-high-text); border: 1px solid var(--badge-high-text); }
+        .btn-demo-extreme { background-color: #F3E5F5; color: #6A1B9A; border: 1px solid #8E24AA; }
+
+        /* CSV 匯出按鈕樣式 */
+        .btn-export {
+            background-color: #4CAF50; color: white; border: none; padding: 8px 16px;
+            border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; transition: opacity 0.3s;
+        }
+        .btn-export:hover { opacity: 0.8; }
+        
+        .table-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .table-header-flex h2 { margin: 0; }
 
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
@@ -151,7 +188,7 @@
         .edit-btn { background-color: #ffb300; }
         .delete-btn { background-color: #e53935; }
 
-        .chart-controls { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
+        .chart-controls { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
         .chart-btn { background-color: transparent; border: 1px solid var(--primary-color); color: var(--primary-color); padding: 6px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
         .chart-btn.active, .chart-btn:hover { background-color: var(--primary-color); color: white; }
 
@@ -163,7 +200,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- 主題設定區域：加入了青色、米色、咖啡色 -->
         <div class="settings-bar">
             <select id="colorThemeSelect" onchange="changeColorTheme(this)">
                 <option value="#4A90E2" data-bg="#E3F2FD">🔵 經典藍</option>
@@ -186,14 +222,29 @@
         </header>
 
         <main>
-            <!-- 貼心話彈出區域 (預設隱藏) -->
             <div id="caringMessage" class="caring-message"></div>
 
-            <!-- 折線圖分析區塊 -->
+            <section class="dashboard-summary">
+                <div class="summary-card">
+                    <h3>🏃 本週平均步數</h3>
+                    <p id="avgSteps">-- 步</p>
+                </div>
+                <div class="summary-card">
+                    <h3>🛌 本週平均睡眠</h3>
+                    <p id="avgSleep">-- 小時</p>
+                </div>
+                <div class="summary-card">
+                    <h3>😊 本週綜合心情</h3>
+                    <p id="avgMood">-- / 10</p>
+                </div>
+            </section>
+
             <section class="card">
                 <h2>📈 健康趨勢與風險分析</h2>
                 <div class="chart-controls">
+                    <button class="chart-btn" onclick="updateChart('3days', this)">近 3 天</button>
                     <button class="chart-btn active" onclick="updateChart('week', this)">近 7 天</button>
+                    <button class="chart-btn" onclick="updateChart('2weeks', this)">近 14 天</button>
                     <button class="chart-btn" onclick="updateChart('month', this)">近 30 天</button>
                     <button class="chart-btn" onclick="updateChart('year', this)">近 1 年</button>
                 </div>
@@ -203,9 +254,11 @@
             </section>
 
             <section class="demo-section">
-                <span class="demo-label">🧪 專題展示快速填寫：</span>
-                <button type="button" class="btn-demo btn-demo-low" onclick="fillDemo('8', 10000, '9')">🟢 正常組數據</button>
-                <button type="button" class="btn-demo btn-demo-high" onclick="fillDemo('3', 1200, '2')">🔴 極端高風險數據</button>
+                <span class="demo-label">🧪 專題展示快速填寫數據：</span>
+                <button type="button" class="btn-demo btn-demo-low" onclick="fillDemo('8', 10000, '9')">🟢 正常組 (睡眠8h/步數10000/心情9)</button>
+                <button type="button" class="btn-demo btn-demo-medium" onclick="fillDemo('6', 5000, '5')">🟡 中風險 (睡眠6h/步數5000/心情5)</button>
+                <button type="button" class="btn-demo btn-demo-high" onclick="fillDemo('4', 3000, '4')">🔴 高風險 (睡眠4h/步數3000/心情4)</button>
+                <button type="button" class="btn-demo btn-demo-extreme" onclick="fillDemo('2', 1000, '1')">🟣 極端數據 (睡眠2h/步數1000/心情1)</button>
             </section>
 
             <section class="card form-section">
@@ -265,7 +318,11 @@
             </section>
 
             <section class="card table-section">
-                <h2>歷史紀錄清單</h2>
+                <div class="table-header-flex">
+                    <h2>歷史紀錄清單</h2>
+                    <button class="btn-export" onclick="exportToCSV()">📥 匯出 CSV 報表</button>
+                </div>
+                
                 <div class="table-responsive">
                     <table id="logsTable">
                         <thead>
@@ -309,12 +366,12 @@
         }
 
         // ==========================================
-        // 專屬貼心話邏輯 (智慧回饋)
+        // 專屬貼心話邏輯
         // ==========================================
         function displayCaringMessage(risk) {
             const msgBox = document.getElementById('caringMessage');
             msgBox.style.display = 'block';
-            msgBox.className = 'caring-message'; // 重置所有 class
+            msgBox.className = 'caring-message';
 
             if (risk === '低風險') {
                 msgBox.classList.add('msg-low');
@@ -327,12 +384,81 @@
                 msgBox.innerHTML = '⚠️ 系統評估：高風險。親愛的，身體在抗議囉！請務必讓自己好好睡一覺，必要時尋求幫助。';
             }
 
-            // 畫面平滑捲動到回饋訊息區
             msgBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         // ==========================================
-        // 圖表邏輯 (包含條件式風險標色)
+        // Dashboard 更新邏輯
+        // ==========================================
+        function updateDashboard(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('avgSteps').innerText = '-- 步';
+                document.getElementById('avgSleep').innerText = '-- 小時';
+                document.getElementById('avgMood').innerText = '-- / 10';
+                return;
+            }
+
+            const today = new Date();
+            const weekLogs = data.filter(log => {
+                const logDate = new Date(log.log_date);
+                const diffDays = (today - logDate) / (1000 * 60 * 60 * 24);
+                return diffDays <= 7;
+            });
+
+            if (weekLogs.length === 0) {
+                document.getElementById('avgSteps').innerText = '-- 步';
+                document.getElementById('avgSleep').innerText = '-- 小時';
+                document.getElementById('avgMood').innerText = '-- / 10';
+                return;
+            }
+
+            let totalSteps = 0, totalSleep = 0, totalMood = 0;
+            weekLogs.forEach(log => {
+                totalSteps += log.steps;
+                totalSleep += log.sleep_hours;
+                totalMood += log.mood_score;
+            });
+
+            const avgSteps = Math.round(totalSteps / weekLogs.length);
+            const avgSleep = (totalSleep / weekLogs.length).toFixed(1);
+            const avgMood = (totalMood / weekLogs.length).toFixed(1);
+
+            const stepsEl = document.getElementById('avgSteps');
+            stepsEl.innerText = `${avgSteps.toLocaleString()} 步`;
+            stepsEl.style.color = avgSteps >= 8000 ? '#4CAF50' : (avgSteps < 5000 ? '#F44336' : 'var(--primary-color)');
+
+            document.getElementById('avgSleep').innerText = `${avgSleep} 小時`;
+            document.getElementById('avgMood').innerText = `${avgMood} / 10`;
+        }
+
+        // ==========================================
+        // 匯出 CSV 邏輯
+        // ==========================================
+        function exportToCSV() {
+            if (!globalLogsData || globalLogsData.length === 0) {
+                alert('目前沒有資料可以匯出喔！');
+                return;
+            }
+            
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+            csvContent += "日期,睡眠時數(小時),當日步數,心情分數(1-10),系統風險評估\n";
+            
+            globalLogsData.forEach(log => {
+                const row = [log.log_date, log.sleep_hours, log.steps, log.mood_score, log.risk_level];
+                csvContent += row.join(",") + "\n";
+            });
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `健康日誌報表_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // ==========================================
+        // 圖表邏輯
         // ==========================================
         let healthChart = null;
         let globalLogsData = []; 
@@ -354,7 +480,9 @@
             chartData = chartData.filter(log => {
                 const logDate = new Date(log.log_date);
                 const diffDays = (today - logDate) / (1000 * 60 * 60 * 24);
+                if (range === '3days') return diffDays <= 3;
                 if (range === 'week') return diffDays <= 7;
+                if (range === '2weeks') return diffDays <= 14;
                 if (range === 'month') return diffDays <= 30;
                 if (range === 'year') return diffDays <= 365;
                 return true;
@@ -541,14 +669,12 @@
                 
                 if (!response.ok) throw new Error('伺服器處理失敗');
                 
-                // 解析後端回傳的 JSON 資料以取得最新的 risk_level
                 const resData = await response.json(); 
                 
                 resetForm();
                 fetchLogs(); 
                 document.getElementById('logDate').focus();
                 
-                // 觸發貼心話顯示
                 displayCaringMessage(resData.risk_level);
 
             } catch (error) {
@@ -561,6 +687,8 @@
                 const response = await fetch('/health-logs');
                 globalLogsData = await response.json(); 
                 
+                updateDashboard(globalLogsData);
+
                 tableBody.innerHTML = '';
                 globalLogsData.forEach(log => {
                     const tr = document.createElement('tr');
@@ -596,7 +724,7 @@
                 const response = await fetch(`/health-logs/${id}`, { method: 'DELETE' });
                 if (response.ok) {
                     fetchLogs();
-                    document.getElementById('caringMessage').style.display = 'none'; // 刪除時隱藏貼心話
+                    document.getElementById('caringMessage').style.display = 'none'; 
                 }
                 else alert('刪除失敗');
             } catch (error) { console.error('刪除錯誤:', error); }
