@@ -1,119 +1,67 @@
-function renderChart(range) {
-            if (!globalLogsData || globalLogsData.length === 0) return;
-
-            let chartData = [...globalLogsData].reverse();
-            const today = new Date();
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧健康日誌與風險評估系統</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* CSS 變數定義 (預設為淺色與藍色主題) */
+        :root {
+            --primary-color: #4A90E2; /* 預設藍色 */
+            --bg-color: #F4F7F6;
+            --text-color: #333333;
+            --card-bg: #FFFFFF;
+            --input-bg: #FFFFFF;
+            --border-color: #cccccc;
             
-            chartData = chartData.filter(log => {
-                const logDate = new Date(log.log_date);
-                const diffDays = (today - logDate) / (1000 * 60 * 60 * 24);
-                if (range === 'week') return diffDays <= 7;
-                if (range === 'month') return diffDays <= 30;
-                if (range === 'year') return diffDays <= 365;
-                return true;
-            });
+            --badge-low: #E8F5E9;
+            --badge-low-text: #2E7D32;
+            --badge-medium: #FFF8E1;
+            --badge-medium-text: #F57F17;
+            --badge-high: #FFEBEE;
+            --badge-high-text: #C62828;
+        }
 
-            const labels = chartData.map(log => log.log_date.substring(5)); 
-            const sleepData = chartData.map(log => log.sleep_hours);
-            const stepsData = chartData.map(log => log.steps);
-            const moodData = chartData.map(log => log.mood_score);
-            // 🌟 優化 4：把風險等級也抓出來，準備放進 Tooltip
-            const riskData = chartData.map(log => log.risk_level); 
+        /* 深色模式變數 */
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #E0E0E0;
+            --card-bg: #1E1E1E;
+            --input-bg: #2C2C2C;
+            --border-color: #444444;
+            
+            --badge-low: #1B5E20;
+            --badge-low-text: #A5D6A7;
+            --badge-medium: #F57F17;
+            --badge-medium-text: #FFE082;
+            --badge-high: #b71c1c;
+            --badge-high-text: #ef9a9a;
+        }
 
-            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
-            const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
 
-            if (healthChart) healthChart.destroy();
+        .container { max-width: 1000px; margin: auto; }
 
-            const ctx = document.getElementById('healthChart').getContext('2d');
-            healthChart = new Chart(ctx, {
-                // 將整體 type 設為 bar，但後續可在 datasets 中個別覆寫為 line
-                type: 'bar', 
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            type: 'bar', // 🌟 優化 1：步數改為長條圖
-                            label: '當日步數',
-                            data: stepsData,
-                            backgroundColor: primaryColor + '66', // 66 是 Hex 的透明度
-                            borderColor: primaryColor,
-                            borderWidth: 1,
-                            borderRadius: 4, // 圓角長條圖
-                            yAxisID: 'y'
-                        },
-                        {
-                            type: 'line', // 保持折線圖
-                            label: '睡眠時數',
-                            data: sleepData,
-                            borderColor: '#9C27B0', 
-                            backgroundColor: '#9C27B0' + '11', // 🌟 優化 2：加上微透明底色
-                            borderWidth: 2,
-                            pointBackgroundColor: '#9C27B0',
-                            pointRadius: 3,        // 🌟 優化 3：資料點平時縮小
-                            pointHoverRadius: 6,   // 🌟 優化 3：滑鼠移過時放大
-                            fill: true,
-                            tension: 0.4,          // 🌟 優化 2：讓線條變成平滑曲線
-                            yAxisID: 'y1'
-                        },
-                        {
-                            type: 'line', // 保持折線圖
-                            label: '心情分數',
-                            data: moodData,
-                            borderColor: '#FF9800', 
-                            backgroundColor: '#FF9800' + '11', 
-                            borderWidth: 2,
-                            pointBackgroundColor: '#FF9800',
-                            pointRadius: 3,
-                            pointHoverRadius: 6,
-                            fill: true,
-                            tension: 0.4,
-                            yAxisID: 'y1'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    color: textColor,
-                    interaction: {
-                        mode: 'index', // 滑鼠游標對齊同一個 X 軸時，顯示所有數據
-                        intersect: false,
-                    },
-                    scales: {
-                        x: {
-                            ticks: { color: textColor },
-                            grid: { display: false } // 隱藏 X 軸網格線讓畫面更乾淨
-                        },
-                        y: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            title: { display: true, text: '步數', color: textColor },
-                            ticks: { color: textColor },
-                            grid: { color: textColor + '22', borderDash: [5, 5] } // 虛線網格
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            title: { display: true, text: '時數/分數', color: textColor },
-                            ticks: { color: textColor },
-                            grid: { drawOnChartArea: false }
-                        }
-                    },
-                    plugins: {
-                        legend: { 
-                            labels: { color: textColor, usePointStyle: true, boxWidth: 8 } 
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            titleFont: { size: 14 },
-                            bodyFont: { size: 13 },
-                            padding: 12,
-                            cornerRadius: 8,
-                            // 🌟 優化 4：客製化 Tooltip 尾部，加入決策樹的風險結果
-                            callbacks: {
-                                footer: function(tooltipItems) {
-                                    const index = tooltipItems[0].dataIndex;
-                                    const risk = riskData[index];
+        /* 頂部設定區域：主題與顏色 */
+        .settings-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .settings-bar select, .settings-bar button {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
