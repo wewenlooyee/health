@@ -1,346 +1,9 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智慧健康日誌與風險評估系統</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        /* CSS 變數定義 (預設為淺色與藍色主題) */
-        :root {
-            --primary-color: #4A90E2; /* 預設藍色 */
-            --bg-color: #F4F7F6;
-            --text-color: #333333;
-            --card-bg: #FFFFFF;
-            --input-bg: #FFFFFF;
-            --border-color: #cccccc;
-            
-            --badge-low: #E8F5E9;
-            --badge-low-text: #2E7D32;
-            --badge-medium: #FFF8E1;
-            --badge-medium-text: #F57F17;
-            --badge-high: #FFEBEE;
-            --badge-high-text: #C62828;
-        }
-
-        /* 深色模式變數 */
-        [data-theme="dark"] {
-            --bg-color: #121212;
-            --text-color: #E0E0E0;
-            --card-bg: #1E1E1E;
-            --input-bg: #2C2C2C;
-            --border-color: #444444;
-            
-            --badge-low: #1B5E20;
-            --badge-low-text: #A5D6A7;
-            --badge-medium: #F57F17;
-            --badge-medium-text: #FFE082;
-            --badge-high: #b71c1c;
-            --badge-high-text: #ef9a9a;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            line-height: 1.6;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .container { max-width: 1000px; margin: auto; }
-
-        /* 頂部設定區域：主題與顏色 */
-        .settings-bar {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .settings-bar select, .settings-bar button {
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            background-color: var(--card-bg);
-            color: var(--text-color);
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        header { text-align: center; margin-bottom: 30px; }
-        header h1 { color: var(--primary-color); margin-bottom: 5px; transition: color 0.3s; }
-
-        .card {
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 25px;
-            transition: background-color 0.3s;
-        }
-
-        .demo-section {
-            background-color: transparent;
-            border: 1px dashed var(--border-color);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .btn-demo {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-        }
-        .btn-demo-low { background-color: var(--badge-low); color: var(--badge-low-text); border: 1px solid var(--badge-low-text); }
-        .btn-demo-high { background-color: var(--badge-high); color: var(--badge-high-text); border: 1px solid var(--badge-high-text); }
-
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
-        
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            box-sizing: border-box;
-            background-color: var(--input-bg);
-            color: var(--text-color);
-            font-size: 16px;
-        }
-        
-        .form-group input:focus, .form-group select:focus {
-            border-color: var(--primary-color);
-            outline: none;
-            box-shadow: 0 0 5px rgba(0,0,0,0.2);
-        }
-
-        .btn-submit {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            width: 100%;
-            transition: opacity 0.3s, background-color 0.3s;
-        }
-        .btn-submit:hover { opacity: 0.8; }
-
-        .btn-cancel {
-            background-color: #9e9e9e; color: white; border: none; padding: 12px 24px;
-            border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 10px; width: 100%;
-        }
-
-        .table-responsive { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 600px; }
-        th, td { padding: 12px; text-align: center; border-bottom: 1px solid var(--border-color); }
-        th { font-weight: 600; }
-
-        .badge { padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 0.9em; display: inline-block; }
-        .badge-low { background-color: var(--badge-low); color: var(--badge-low-text); }
-        .badge-medium { background-color: var(--badge-medium); color: var(--badge-medium-text); }
-        .badge-high { background-color: var(--badge-high); color: var(--badge-high-text); }
-
-        .action-btn { padding: 6px 12px; font-size: 13px; margin: 0 4px; border-radius: 4px; border: none; cursor: pointer; color: white; }
-        .edit-btn { background-color: #ffb300; }
-        .delete-btn { background-color: #e53935; }
-
-        /* 圖表切換按鈕區域 */
-        .chart-controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .chart-btn {
-            background-color: transparent;
-            border: 1px solid var(--primary-color);
-            color: var(--primary-color);
-            padding: 6px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-        .chart-btn.active, .chart-btn:hover {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        @media (min-width: 600px) {
-            .btn-submit, .btn-cancel { width: auto; }
-            .btn-cancel { margin-top: 0; margin-left: 10px; }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="settings-bar">
-            <select id="colorThemeSelect" onchange="changeColorTheme(this.value)">
-                <option value="#4A90E2">🔵 經典藍</option>
-                <option value="#F44336">🔴 熱情紅</option>
-                <option value="#FF9800">🟠 活力橙</option>
-                <option value="#FBC02D">🟡 暖陽黃</option>
-                <option value="#4CAF50">🟢 健康綠</option>
-                <option value="#9C27B0">🟣 夢幻紫</option>
-                <option value="#E91E63">🌸 櫻花粉</option>
-            </select>
-            <button id="darkModeBtn" onclick="toggleDarkMode()">🌙 切換深色模式</button>
-        </div>
-
-        <header>
-            <h1>🩺 智慧健康日誌與風險評估</h1>
-            <p>透過多層決策樹演算法，智慧分析您的日常健康風險</p>
-        </header>
-
-        <main>
-            <section class="card">
-                <h2>📈 健康趨勢分析</h2>
-                <div class="chart-controls">
-                    <button class="chart-btn active" onclick="updateChart('week', this)">近 7 天</button>
-                    <button class="chart-btn" onclick="updateChart('month', this)">近 30 天</button>
-                    <button class="chart-btn" onclick="updateChart('year', this)">近 1 年</button>
-                </div>
-                <div style="position: relative; height:300px; width:100%">
-                    <canvas id="healthChart"></canvas>
-                </div>
-            </section>
-
-            <section class="demo-section">
-                <span class="demo-label">🧪 專題展示快速填寫：</span>
-                <button type="button" class="btn-demo btn-demo-low" onclick="fillDemo('8', 10000, '9')">🟢 正常組數據</button>
-                <button type="button" class="btn-demo btn-demo-high" onclick="fillDemo('3', 1200, '2')">🔴 極端高風險數據</button>
-            </section>
-
-            <section class="card form-section">
-                <h2>新增 / 編輯每日健康紀錄</h2>
-                <form id="healthForm">
-                    <input type="hidden" id="editId" value="">
-                    <div class="form-group">
-                        <label for="logDate">紀錄日期：</label>
-                        <input type="date" id="logDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="sleepHours">睡眠時數 (小時)：</label>
-                        <select id="sleepHours" required>
-                            <option value="" disabled selected>請選擇睡眠時數</option>
-                            <option value="1">1 小時</option>
-                            <option value="2">2 小時</option>
-                            <option value="3">3 小時</option>
-                            <option value="4">4 小時</option>
-                            <option value="5">5 小時</option>
-                            <option value="6">6 小時</option>
-                            <option value="7">7 小時</option>
-                            <option value="8">8 小時</option>
-                            <option value="9">9 小時</option>
-                            <option value="10">10 小時</option>
-                            <option value="11">11 小時</option>
-                            <option value="12">12 小時 (含以上)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="steps">當日步數：</label>
-                        <input type="number" id="steps" min="0" required placeholder="例如：8500">
-                    </div>
-                    <div class="form-group">
-                        <label for="moodScore">心情分數 (1 差 ~ 10 極佳)：</label>
-                        <select id="moodScore" required>
-                            <option value="" disabled selected>請選擇心情分數</option>
-                            <option value="1">1 分 - 極差</option>
-                            <option value="2">2 分</option>
-                            <option value="3">3 分</option>
-                            <option value="4">4 分</option>
-                            <option value="5">5 分 - 普通</option>
-                            <option value="6">6 分</option>
-                            <option value="7">7 分</option>
-                            <option value="8">8 分</option>
-                            <option value="9">9 分</option>
-                            <option value="10">10 分 - 極佳</option>
-                        </select>
-                    </div>
-                    <button type="submit" id="submitBtn" class="btn-submit">儲存並評估風險</button>
-                    <button type="button" id="cancelBtn" class="btn-cancel" style="display:none;">取消編輯</button>
-                </form>
-            </section>
-
-            <section class="card table-section">
-                <h2>歷史紀錄清單</h2>
-                <div class="table-responsive">
-                    <table id="logsTable">
-                        <thead>
-                            <tr>
-                                <th>日期</th>
-                                <th>睡眠 (小時)</th>
-                                <th>步數</th>
-                                <th>心情 (1-10)</th>
-                                <th>系統風險評估</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="logsTableBody"></tbody>
-                    </table>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <script>
-        // ==========================================
-        // 主題與顏色切換邏輯
-        // ==========================================
-        let isDarkMode = false;
-        
-        function toggleDarkMode() {
-            isDarkMode = !isDarkMode;
-            document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
-            document.getElementById('darkModeBtn').innerText = isDarkMode ? '☀️ 切換淺色模式' : '🌙 切換深色模式';
-            // 深色模式切換時，重新渲染圖表以更新文字顏色
-            if(globalLogsData) renderChart(currentChartRange);
-        }
-
-        function changeColorTheme(colorHex) {
-            document.documentElement.style.setProperty('--primary-color', colorHex);
-            // 重新渲染圖表以更新線條顏色
-            if(globalLogsData) renderChart(currentChartRange);
-        }
-
-        // ==========================================
-        // 圖表邏輯 (Chart.js)
-        // ==========================================
-        let healthChart = null;
-        let globalLogsData = []; // 儲存從伺服器抓回來的原始資料
-        let currentChartRange = 'week';
-
-        function updateChart(range, btnElement) {
-            currentChartRange = range;
-            // 更新按鈕樣式
-            document.querySelectorAll('.chart-btn').forEach(btn => btn.classList.remove('active'));
-            if(btnElement) btnElement.classList.add('active');
-            
-            renderChart(range);
-        }
-
-        function renderChart(range) {
+function renderChart(range) {
             if (!globalLogsData || globalLogsData.length === 0) return;
 
-            // 因為資料是依日期遞減排序的(最新在最前面)，圖表需要由左至右(舊到新)，所以反轉陣列
             let chartData = [...globalLogsData].reverse();
             const today = new Date();
             
-            // 依據時間範圍過濾資料
             chartData = chartData.filter(log => {
                 const logDate = new Date(log.log_date);
                 const diffDays = (today - logDate) / (1000 * 60 * 60 * 24);
@@ -350,58 +13,77 @@
                 return true;
             });
 
-            // 準備 Chart.js 需要的資料格式
-            const labels = chartData.map(log => log.log_date.substring(5)); // 顯示 MM-DD
+            const labels = chartData.map(log => log.log_date.substring(5)); 
             const sleepData = chartData.map(log => log.sleep_hours);
             const stepsData = chartData.map(log => log.steps);
             const moodData = chartData.map(log => log.mood_score);
+            // 🌟 優化 4：把風險等級也抓出來，準備放進 Tooltip
+            const riskData = chartData.map(log => log.risk_level); 
 
-            // 取得目前的 Primary Color
             const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
             const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
 
-            if (healthChart) healthChart.destroy(); // 刪除舊圖表再重繪
+            if (healthChart) healthChart.destroy();
 
             const ctx = document.getElementById('healthChart').getContext('2d');
             healthChart = new Chart(ctx, {
-                type: 'line',
+                // 將整體 type 設為 bar，但後續可在 datasets 中個別覆寫為 line
+                type: 'bar', 
                 data: {
                     labels: labels,
                     datasets: [
                         {
+                            type: 'bar', // 🌟 優化 1：步數改為長條圖
                             label: '當日步數',
                             data: stepsData,
+                            backgroundColor: primaryColor + '66', // 66 是 Hex 的透明度
                             borderColor: primaryColor,
-                            backgroundColor: primaryColor + '33', // 加上透明度
-                            yAxisID: 'y',
-                            tension: 0.3,
-                            fill: true
+                            borderWidth: 1,
+                            borderRadius: 4, // 圓角長條圖
+                            yAxisID: 'y'
                         },
                         {
+                            type: 'line', // 保持折線圖
                             label: '睡眠時數',
                             data: sleepData,
-                            borderColor: '#9C27B0', // 固定紫色
-                            borderDash: [5, 5],
-                            yAxisID: 'y1',
-                            tension: 0.3
+                            borderColor: '#9C27B0', 
+                            backgroundColor: '#9C27B0' + '11', // 🌟 優化 2：加上微透明底色
+                            borderWidth: 2,
+                            pointBackgroundColor: '#9C27B0',
+                            pointRadius: 3,        // 🌟 優化 3：資料點平時縮小
+                            pointHoverRadius: 6,   // 🌟 優化 3：滑鼠移過時放大
+                            fill: true,
+                            tension: 0.4,          // 🌟 優化 2：讓線條變成平滑曲線
+                            yAxisID: 'y1'
                         },
                         {
+                            type: 'line', // 保持折線圖
                             label: '心情分數',
                             data: moodData,
-                            borderColor: '#FF9800', // 固定橘色
-                            yAxisID: 'y1',
-                            tension: 0.3
+                            borderColor: '#FF9800', 
+                            backgroundColor: '#FF9800' + '11', 
+                            borderWidth: 2,
+                            pointBackgroundColor: '#FF9800',
+                            pointRadius: 3,
+                            pointHoverRadius: 6,
+                            fill: true,
+                            tension: 0.4,
+                            yAxisID: 'y1'
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    color: textColor, // 深/淺色文字適應
+                    color: textColor,
+                    interaction: {
+                        mode: 'index', // 滑鼠游標對齊同一個 X 軸時，顯示所有數據
+                        intersect: false,
+                    },
                     scales: {
                         x: {
                             ticks: { color: textColor },
-                            grid: { color: textColor + '22' }
+                            grid: { display: false } // 隱藏 X 軸網格線讓畫面更乾淨
                         },
                         y: {
                             type: 'linear',
@@ -409,7 +91,7 @@
                             position: 'left',
                             title: { display: true, text: '步數', color: textColor },
                             ticks: { color: textColor },
-                            grid: { color: textColor + '22' }
+                            grid: { color: textColor + '22', borderDash: [5, 5] } // 虛線網格
                         },
                         y1: {
                             type: 'linear',
@@ -417,153 +99,21 @@
                             position: 'right',
                             title: { display: true, text: '時數/分數', color: textColor },
                             ticks: { color: textColor },
-                            grid: { drawOnChartArea: false } // 避免網格線重疊
+                            grid: { drawOnChartArea: false }
                         }
                     },
                     plugins: {
-                        legend: { labels: { color: textColor } }
-                    }
-                }
-            });
-        }
-
-        // ==========================================
-        // 原有邏輯：表單與 API 串接
-        // ==========================================
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchLogs();
-            document.getElementById('logDate').valueAsDate = new Date();
-        });
-
-        const form = document.getElementById('healthForm');
-        const tableBody = document.getElementById('logsTableBody');
-        const submitBtn = document.getElementById('submitBtn');
-        const cancelBtn = document.getElementById('cancelBtn');
-        const editIdInput = document.getElementById('editId');
-
-        // Enter 鍵切換欄位邏輯
-        const inputFlow = ['logDate', 'sleepHours', 'steps', 'moodScore'];
-        inputFlow.forEach((id, index) => {
-            const el = document.getElementById(id);
-            el.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (index < inputFlow.length - 1) {
-                        document.getElementById(inputFlow[index + 1]).focus();
-                    } else {
-                        submitBtn.click();
-                    }
-                }
-            });
-        });
-
-        window.fillDemo = function(sleep, steps, mood) {
-            document.getElementById('sleepHours').value = sleep;
-            document.getElementById('steps').value = steps;
-            document.getElementById('moodScore').value = mood;
-        };
-
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const logData = {
-                log_date: document.getElementById('logDate').value,
-                sleep_hours: parseFloat(document.getElementById('sleepHours').value),
-                steps: parseInt(document.getElementById('steps').value, 10),
-                mood_score: parseInt(document.getElementById('moodScore').value, 10)
-            };
-            const editId = editIdInput.value;
-
-            try {
-                let response;
-                if (editId) {
-                    response = await fetch(`/health-logs/${editId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(logData)
-                    });
-                } else {
-                    response = await fetch('/health-logs', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(logData)
-                    });
-                }
-                if (!response.ok) throw new Error('伺服器處理失敗');
-                
-                resetForm();
-                fetchLogs(); // 重新抓取並更新表格與圖表
-                document.getElementById('logDate').focus();
-            } catch (error) {
-                alert('發生錯誤: ' + error.message);
-            }
-        });
-
-        async function fetchLogs() {
-            try {
-                const response = await fetch('/health-logs');
-                globalLogsData = await response.json(); // 儲存至全域變數供圖表使用
-                
-                // 渲染表格
-                tableBody.innerHTML = '';
-                globalLogsData.forEach(log => {
-                    const tr = document.createElement('tr');
-                    let badgeClass = '';
-                    if (log.risk_level === '低風險') badgeClass = 'badge-low';
-                    else if (log.risk_level === '中風險') badgeClass = 'badge-medium';
-                    else if (log.risk_level === '高風險') badgeClass = 'badge-high';
-
-                    tr.innerHTML = `
-                        <td>${log.log_date}</td>
-                        <td>${log.sleep_hours}</td>
-                        <td>${log.steps}</td>
-                        <td>${log.mood_score}</td>
-                        <td><span class="badge ${badgeClass}">${log.risk_level}</span></td>
-                        <td>
-                            <button class="action-btn edit-btn" onclick="editLog(${log.id}, '${log.log_date}', ${log.sleep_hours}, ${log.steps}, ${log.mood_score})">編輯</button>
-                            <button class="action-btn delete-btn" onclick="deleteLog(${log.id})">刪除</button>
-                        </td>
-                    `;
-                    tableBody.appendChild(tr);
-                });
-
-                // 同步更新圖表
-                renderChart(currentChartRange);
-
-            } catch (error) {
-                console.error('無法載入日誌:', error);
-            }
-        }
-
-        async function deleteLog(id) {
-            if (!confirm('確定要刪除這筆紀錄嗎？')) return;
-            try {
-                const response = await fetch(`/health-logs/${id}`, { method: 'DELETE' });
-                if (response.ok) fetchLogs();
-                else alert('刪除失敗');
-            } catch (error) { console.error('刪除錯誤:', error); }
-        }
-
-        window.editLog = function(id, date, sleep, steps, mood) {
-            editIdInput.value = id;
-            document.getElementById('logDate').value = date;
-            document.getElementById('sleepHours').value = sleep;
-            document.getElementById('steps').value = steps;
-            document.getElementById('moodScore').value = mood;
-            
-            submitBtn.textContent = '更新並重新評估';
-            cancelBtn.style.display = 'inline-block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-
-        cancelBtn.addEventListener('click', resetForm);
-
-        function resetForm() {
-            form.reset();
-            editIdInput.value = '';
-            document.getElementById('logDate').valueAsDate = new Date();
-            submitBtn.textContent = '儲存並評估風險';
-            cancelBtn.style.display = 'none';
-        }
-    </script>
-</body>
-</html>
+                        legend: { 
+                            labels: { color: textColor, usePointStyle: true, boxWidth: 8 } 
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 13 },
+                            padding: 12,
+                            cornerRadius: 8,
+                            // 🌟 優化 4：客製化 Tooltip 尾部，加入決策樹的風險結果
+                            callbacks: {
+                                footer: function(tooltipItems) {
+                                    const index = tooltipItems[0].dataIndex;
+                                    const risk = riskData[index];
