@@ -65,3 +65,543 @@
             border-radius: 6px;
             border: 1px solid var(--border-color);
             background-color: var(--card-bg);
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        header { text-align: center; margin-bottom: 30px; }
+        header h1 { color: var(--primary-color); margin-bottom: 5px; transition: color 0.3s; }
+
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            transition: background-color 0.3s;
+        }
+
+        .demo-section {
+            background-color: transparent;
+            border: 1px dashed var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn-demo {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .btn-demo-low { background-color: var(--badge-low); color: var(--badge-low-text); border: 1px solid var(--badge-low-text); }
+        .btn-demo-high { background-color: var(--badge-high); color: var(--badge-high-text); border: 1px solid var(--badge-high-text); }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 16px;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+
+        .btn-submit {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            transition: opacity 0.3s, background-color 0.3s;
+        }
+        .btn-submit:hover { opacity: 0.8; }
+
+        .btn-cancel {
+            background-color: #9e9e9e; color: white; border: none; padding: 12px 24px;
+            border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 10px; width: 100%;
+        }
+
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 600px; }
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid var(--border-color); }
+        th { font-weight: 600; }
+
+        .badge { padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 0.9em; display: inline-block; }
+        .badge-low { background-color: var(--badge-low); color: var(--badge-low-text); }
+        .badge-medium { background-color: var(--badge-medium); color: var(--badge-medium-text); }
+        .badge-high { background-color: var(--badge-high); color: var(--badge-high-text); }
+
+        .action-btn { padding: 6px 12px; font-size: 13px; margin: 0 4px; border-radius: 4px; border: none; cursor: pointer; color: white; }
+        .edit-btn { background-color: #ffb300; }
+        .delete-btn { background-color: #e53935; }
+
+        /* 圖表切換按鈕區域 */
+        .chart-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .chart-btn {
+            background-color: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 6px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .chart-btn.active, .chart-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        @media (min-width: 600px) {
+            .btn-submit, .btn-cancel { width: auto; }
+            .btn-cancel { margin-top: 0; margin-left: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="settings-bar">
+            <select id="colorThemeSelect" onchange="changeColorTheme(this.value)">
+                <option value="#4A90E2">🔵 經典藍</option>
+                <option value="#F44336">🔴 熱情紅</option>
+                <option value="#FF9800">🟠 活力橙</option>
+                <option value="#FBC02D">🟡 暖陽黃</option>
+                <option value="#4CAF50">🟢 健康綠</option>
+                <option value="#9C27B0">🟣 夢幻紫</option>
+                <option value="#E91E63">🌸 櫻花粉</option>
+            </select>
+            <button id="darkModeBtn" onclick="toggleDarkMode()">🌙 切換深色模式</button>
+        </div>
+
+        <header>
+            <h1>🩺 智慧健康日誌與風險評估</h1>
+            <p>透過多層決策樹演算法，智慧分析您的日常健康風險</p>
+        </header>
+
+        <main>
+            <section class="card">
+                <h2>📈 健康趨勢分析</h2>
+                <div class="chart-controls">
+                    <button class="chart-btn active" onclick="updateChart('week', this)">近 7 天</button>
+                    <button class="chart-btn" onclick="updateChart('month', this)">近 30 天</button>
+                    <button class="chart-btn" onclick="updateChart('year', this)">近 1 年</button>
+                </div>
+                <div style="position: relative; height:300px; width:100%">
+                    <canvas id="healthChart"></canvas>
+                </div>
+            </section>
+
+            <section class="demo-section">
+                <span class="demo-label">🧪 專題展示快速填寫：</span>
+                <button type="button" class="btn-demo btn-demo-low" onclick="fillDemo('8', 10000, '9')">🟢 正常組數據</button>
+                <button type="button" class="btn-demo btn-demo-high" onclick="fillDemo('3', 1200, '2')">🔴 極端高風險數據</button>
+            </section>
+
+            <section class="card form-section">
+                <h2>新增 / 編輯每日健康紀錄</h2>
+                <form id="healthForm">
+                    <input type="hidden" id="editId" value="">
+                    
+                    <div class="form-group">
+                        <label for="logDate">紀錄日期：</label>
+                        <input type="date" id="logDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sleepHours">睡眠時數 (小時)：</label>
+                        <select id="sleepHours" required>
+                            <option value="" disabled selected>請選擇睡眠時數</option>
+                            <option value="1">1 小時</option>
+                            <option value="2">2 小時</option>
+                            <option value="3">3 小時</option>
+                            <option value="4">4 小時</option>
+                            <option value="5">5 小時</option>
+                            <option value="6">6 小時</option>
+                            <option value="7">7 小時</option>
+                            <option value="8">8 小時</option>
+                            <option value="9">9 小時</option>
+                            <option value="10">10 小時</option>
+                            <option value="11">11 小時</option>
+                            <option value="12">12 小時 (含以上)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="steps">當日步數：</label>
+                        <input type="number" id="steps" min="0" required placeholder="例如：8500">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="moodScore">心情分數 (1 差 ~ 10 極佳)：</label>
+                        <select id="moodScore" required>
+                            <option value="" disabled selected>請選擇心情分數</option>
+                            <option value="1">1 分 - 極差</option>
+                            <option value="2">2 分</option>
+                            <option value="3">3 分</option>
+                            <option value="4">4 分</option>
+                            <option value="5">5 分 - 普通</option>
+                            <option value="6">6 分</option>
+                            <option value="7">7 分</option>
+                            <option value="8">8 分</option>
+                            <option value="9">9 分</option>
+                            <option value="10">10 分 - 極佳</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="btn-submit">儲存並評估風險</button>
+                    <button type="button" id="cancelBtn" class="btn-cancel" style="display:none;">取消編輯</button>
+                </form>
+            </section>
+
+            <section class="card table-section">
+                <h2>歷史紀錄清單</h2>
+                <div class="table-responsive">
+                    <table id="logsTable">
+                        <thead>
+                            <tr>
+                                <th>日期</th>
+                                <th>睡眠 (小時)</th>
+                                <th>步數</th>
+                                <th>心情 (1-10)</th>
+                                <th>系統風險評估</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logsTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // ==========================================
+        // 主題與顏色切換邏輯
+        // ==========================================
+        let isDarkMode = false;
+        
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+            document.getElementById('darkModeBtn').innerText = isDarkMode ? '☀️ 切換淺色模式' : '🌙 切換深色模式';
+            if(globalLogsData) renderChart(currentChartRange);
+        }
+
+        function changeColorTheme(colorHex) {
+            document.documentElement.style.setProperty('--primary-color', colorHex);
+            if(globalLogsData) renderChart(currentChartRange);
+        }
+
+        // ==========================================
+        // 圖表邏輯 (Chart.js) 混合型高質感圖表
+        // ==========================================
+        let healthChart = null;
+        let globalLogsData = []; 
+        let currentChartRange = 'week';
+
+        function updateChart(range, btnElement) {
+            currentChartRange = range;
+            document.querySelectorAll('.chart-btn').forEach(btn => btn.classList.remove('active'));
+            if(btnElement) btnElement.classList.add('active');
+            renderChart(range);
+        }
+
+        function renderChart(range) {
+            if (!globalLogsData || globalLogsData.length === 0) return;
+
+            let chartData = [...globalLogsData].reverse();
+            const today = new Date();
+            
+            chartData = chartData.filter(log => {
+                const logDate = new Date(log.log_date);
+                const diffDays = (today - logDate) / (1000 * 60 * 60 * 24);
+                if (range === 'week') return diffDays <= 7;
+                if (range === 'month') return diffDays <= 30;
+                if (range === 'year') return diffDays <= 365;
+                return true;
+            });
+
+            const labels = chartData.map(log => log.log_date.substring(5)); 
+            const sleepData = chartData.map(log => log.sleep_hours);
+            const stepsData = chartData.map(log => log.steps);
+            const moodData = chartData.map(log => log.mood_score);
+            const riskData = chartData.map(log => log.risk_level); 
+
+            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+            const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
+
+            if (healthChart) healthChart.destroy();
+
+            const ctx = document.getElementById('healthChart').getContext('2d');
+            healthChart = new Chart(ctx, {
+                type: 'bar', 
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: '當日步數',
+                            data: stepsData,
+                            backgroundColor: primaryColor + '66', 
+                            borderColor: primaryColor,
+                            borderWidth: 1,
+                            borderRadius: 4, 
+                            yAxisID: 'y'
+                        },
+                        {
+                            type: 'line',
+                            label: '睡眠時數',
+                            data: sleepData,
+                            borderColor: '#9C27B0', 
+                            backgroundColor: '#9C27B0' + '11', 
+                            borderWidth: 2,
+                            pointBackgroundColor: '#9C27B0',
+                            pointRadius: 3,        
+                            pointHoverRadius: 6,   
+                            fill: true,
+                            tension: 0.4,          
+                            yAxisID: 'y1'
+                        },
+                        {
+                            type: 'line',
+                            label: '心情分數',
+                            data: moodData,
+                            borderColor: '#FF9800', 
+                            backgroundColor: '#FF9800' + '11', 
+                            borderWidth: 2,
+                            pointBackgroundColor: '#FF9800',
+                            pointRadius: 3,
+                            pointHoverRadius: 6,
+                            fill: true,
+                            tension: 0.4,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    color: textColor,
+                    interaction: {
+                        mode: 'index', 
+                        intersect: false,
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: textColor },
+                            grid: { display: false } 
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: '步數', color: textColor },
+                            ticks: { color: textColor },
+                            grid: { color: textColor + '22', borderDash: [5, 5] } 
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: '時數/分數', color: textColor },
+                            ticks: { color: textColor },
+                            grid: { drawOnChartArea: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { 
+                            labels: { color: textColor, usePointStyle: true, boxWidth: 8 } 
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 13 },
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                footer: function(tooltipItems) {
+                                    const index = tooltipItems[0].dataIndex;
+                                    const risk = riskData[index];
+                                    let symbol = risk === '高風險' ? '🔴' : (risk === '中風險' ? '🟡' : '🟢');
+                                    return '\n系統判定：' + symbol + ' ' + risk;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // 原有邏輯：表單與 API 串接
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchLogs();
+            document.getElementById('logDate').valueAsDate = new Date();
+        });
+
+        const form = document.getElementById('healthForm');
+        const tableBody = document.getElementById('logsTableBody');
+        const submitBtn = document.getElementById('submitBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const editIdInput = document.getElementById('editId');
+
+        // Enter 鍵切換欄位邏輯
+        const inputFlow = ['logDate', 'sleepHours', 'steps', 'moodScore'];
+        inputFlow.forEach((id, index) => {
+            const el = document.getElementById(id);
+            el.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (index < inputFlow.length - 1) {
+                        document.getElementById(inputFlow[index + 1]).focus();
+                    } else {
+                        submitBtn.click();
+                    }
+                }
+            });
+        });
+
+        window.fillDemo = function(sleep, steps, mood) {
+            document.getElementById('sleepHours').value = sleep;
+            document.getElementById('steps').value = steps;
+            document.getElementById('moodScore').value = mood;
+            
+            const inputs = ['sleepHours', 'steps', 'moodScore'];
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                el.style.backgroundColor = '#FFF9C4';
+                setTimeout(() => el.style.backgroundColor = '', 500);
+            });
+        };
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const logData = {
+                log_date: document.getElementById('logDate').value,
+                sleep_hours: parseFloat(document.getElementById('sleepHours').value),
+                steps: parseInt(document.getElementById('steps').value, 10),
+                mood_score: parseInt(document.getElementById('moodScore').value, 10)
+            };
+            const editId = editIdInput.value;
+
+            try {
+                let response;
+                if (editId) {
+                    response = await fetch(`/health-logs/${editId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(logData)
+                    });
+                } else {
+                    response = await fetch('/health-logs', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(logData)
+                    });
+                }
+                if (!response.ok) throw new Error('伺服器處理失敗');
+                
+                resetForm();
+                fetchLogs(); 
+                document.getElementById('logDate').focus();
+            } catch (error) {
+                alert('發生錯誤: ' + error.message);
+            }
+        });
+
+        async function fetchLogs() {
+            try {
+                const response = await fetch('/health-logs');
+                globalLogsData = await response.json(); 
+                
+                tableBody.innerHTML = '';
+                globalLogsData.forEach(log => {
+                    const tr = document.createElement('tr');
+                    let badgeClass = '';
+                    if (log.risk_level === '低風險') badgeClass = 'badge-low';
+                    else if (log.risk_level === '中風險') badgeClass = 'badge-medium';
+                    else if (log.risk_level === '高風險') badgeClass = 'badge-high';
+
+                    tr.innerHTML = `
+                        <td>${log.log_date}</td>
+                        <td>${log.sleep_hours}</td>
+                        <td>${log.steps}</td>
+                        <td>${log.mood_score}</td>
+                        <td><span class="badge ${badgeClass}">${log.risk_level}</span></td>
+                        <td>
+                            <button class="action-btn edit-btn" onclick="editLog(${log.id}, '${log.log_date}', ${log.sleep_hours}, ${log.steps}, ${log.mood_score})">編輯</button>
+                            <button class="action-btn delete-btn" onclick="deleteLog(${log.id})">刪除</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+
+                renderChart(currentChartRange);
+
+            } catch (error) {
+                console.error('無法載入日誌:', error);
+            }
+        }
+
+        async function deleteLog(id) {
+            if (!confirm('確定要刪除這筆紀錄嗎？')) return;
+            try {
+                const response = await fetch(`/health-logs/${id}`, { method: 'DELETE' });
+                if (response.ok) fetchLogs();
+                else alert('刪除失敗');
+            } catch (error) { console.error('刪除錯誤:', error); }
+        }
+
+        window.editLog = function(id, date, sleep, steps, mood) {
+            editIdInput.value = id;
+            document.getElementById('logDate').value = date;
+            document.getElementById('sleepHours').value = sleep;
+            document.getElementById('steps').value = steps;
+            document.getElementById('moodScore').value = mood;
+            
+            submitBtn.textContent = '更新並重新評估';
+            cancelBtn.style.display = 'inline-block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        cancelBtn.addEventListener('click', resetForm);
+
+        function resetForm() {
+            form.reset();
+            editIdInput.value = '';
+            document.getElementById('logDate').valueAsDate = new Date();
+            submitBtn.textContent = '儲存並評估風險';
+            cancelBtn.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
